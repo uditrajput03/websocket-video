@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+const wsUrl = import.meta.env.VITE_BACKEND_WS || "ws://localhost:3000"
 
 const renderImg = (imgRef, img) => {
     if (!img || !imgRef.current) return null
@@ -13,7 +14,7 @@ export default function Receive() {
     const imgRef = useRef(null)
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:3000");
+        const ws = new WebSocket(wsUrl);
         setSocket(ws);
 
         ws.onopen = () => {

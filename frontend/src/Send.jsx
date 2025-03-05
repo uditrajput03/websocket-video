@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+const wsUrl = import.meta.env.VITE_BACKEND_WS || "ws://localhost:3000"
 
 export default function Send() {
     const [msg, setMsg] = useState("")
@@ -10,7 +11,7 @@ export default function Send() {
     const canvasRef = useRef(null)
     const streamRef = useRef(false)
     useEffect(() => {
-        const socket = new WebSocket('ws://localhost:3000')
+        const socket = new WebSocket(wsUrl)
         setSocket(socket);
         socket.onopen = () => {
             console.log('Connection established');

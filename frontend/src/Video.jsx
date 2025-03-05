@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+const wsUrl = import.meta.env.VITE_BACKEND_WS || "ws://localhost:3000"
 
 const processVideo = async (canvasRef, ws, mediaStreamRef, videoRef) => {
     if (!videoRef || !canvasRef) return
@@ -28,7 +29,7 @@ export function Video() {
     const [ws, setWs] = useState(null)
 
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:3000')
+        const ws = new WebSocket(wsUrl)
         setWs(ws)
         ws.onopen = () => {
             console.log("Connected");
@@ -61,6 +62,20 @@ export function Video() {
 
             processVideo(canvasRef, ws, mediaStreamRef, videoRef)
         }}>Render</button>
+
+
+        <button className="px-3 py-1 border border-black" onClick={() => {
+            if (videoRef.current.requestFullscreen) {
+                videoRef.current.requestFullscreen();
+            } else if (videoRef.current.mozRequestFullScreen) { // Firefox
+                videoRef.current.mozRequestFullScreen();
+            } else if (videoRef.current.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                videoRef.current.webkitRequestFullscreen();
+            } else if (videoRef.current.msRequestFullscreen) { // IE/Edge
+                videoRef.current.msRequestFullscreen();
+            }
+        }}>Full Screen</button>
+
         <canvas ref={canvasRef} hidden></canvas>
     </>
 }

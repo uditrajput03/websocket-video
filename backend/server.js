@@ -16,7 +16,7 @@ wss.on('connection', ((ws) => {
 
     ws.on('message', (msg, isBinary) => {
         if (isBinary) {
-            console.log("Binary data receiver");
+            // console.log("Binary data receiver");
             // fs.writeFile(`./images/image-${Date.now()}.jpg`, msg, (err) => {
             //     if (err) {
             //         console.log("Error in writting", err);

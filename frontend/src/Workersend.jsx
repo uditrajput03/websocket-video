@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { NavBar } from '../components/NavBar'
+const wsUrl = import.meta.env.VITE_BACKEND_WS || "ws://localhost:3000"
 
 export default function WorkerSend() {
     const [msg, setMsg] = useState("")
@@ -10,6 +12,10 @@ export default function WorkerSend() {
     const canvasRef = useRef(null)
     const streamRef = useRef(false)
     const worker = new Worker(new URL("./worker.js", import.meta.url));
+
+    const fpsRef = useRef(30);
+    const qualityRef = useRef(0.1);
+    const scaleRef = useRef(0.5);
 
     // useEffect(() => {
     //     const socket = new WebSocket('ws://localhost:3000')
@@ -65,13 +71,21 @@ export default function WorkerSend() {
         const imageCapture = new ImageCapture(videoTrack);
 
         // Tell worker to set up WebSocket connection
-        worker.postMessage("init");
+        let fps = fpsRef.current
+        let quality = qualityRef.current
+        let scale = scaleRef.current
+        worker.postMessage({ type: "init", ws: wsUrl, fps, quality, scale });
         // worker.postMessage({ stream, socket, frameRate }, [stream]);
 
         worker.onmessage = async (e) => {
+            let fps = fpsRef.current
+            let quality = qualityRef.current
+            let scale = scaleRef.current
             if (e.data === "nextFrame") {
                 const frame = await imageCapture.grabFrame();
-                worker.postMessage({ type: "nextFrame", frame }, [frame]);
+                console.log(fps, quality, scale);
+
+                worker.postMessage({ type: "nextFrame", frame, fps, quality, scale }, [frame]);
             }
         };
         // const sendFrame = async () => {
@@ -122,6 +136,7 @@ export default function WorkerSend() {
     return (
         <>
             <div>
+                <NavBar {...{ fpsRef, qualityRef, scaleRef }} />
                 <div>message: {msg}</div>
 
                 <div>

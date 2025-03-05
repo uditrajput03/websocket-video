@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { NavBar } from "../components/NavBar";
 export default function WorkerTest() {
     const [count, setCount] = useState(0)
     const [ans, setAns] = useState(0)
@@ -23,6 +24,7 @@ export default function WorkerTest() {
         }
     }
     return <>
+        <NavBar />
         <div>Time Taken {timeTaken} ms</div>
         <button onClick={getAns}>Calculate Normal {ans}</button>
         <button onClick={getAnsWorker}>Calculate Worker {ans}</button>
