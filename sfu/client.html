@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple SFU</title>
+</head>
+<body>
+  <h1>SFU Test</h1>
+  <video id="local" autoplay muted playsinline></video>
+  <video id="remote" autoplay playsinline></video>
+  <script src="https://cdn.jsdelivr.net/npm/mediasoup-client@3/lib/index.min.js"></script>
+  <script>
+    const ws = new WebSocket(`ws://localhost:3000`);
+    let device;
+    let sendTransport, recvTransport;
+
+    const localVideo = document.getElementById('local');
+    const remoteVideo = document.getElementById('remote');
+
+    ws.onmessage = async ({ data }) => {
+      const msg = JSON.parse(data);
+
+      if (msg.action === 'rtpCapabilities') {
+        device = new mediasoupClient.Device();
+        await device.load({ routerRtpCapabilities: msg.data });
+        ws.send(JSON.stringify({ action: 'createTransport' }));
+      }
+
+      else if (msg.action === 'transportCreated') {
+        sendTransport = device.createSendTransport(msg.data);
+        sendTransport.on('connect', ({ dtlsParameters }, cb) => {
+          ws.send(JSON.stringify({ action: 'connectTransport', dtlsParameters }));
+          cb();
+        });
+
+        sendTransport.on('produce', async ({ kind, rtpParameters }, cb) => {
+          ws.send(JSON.stringify({ action: 'produce', kind, rtpParameters }));
+          cb();
+        });
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = stream;
+
+        for (const track of stream.getTracks()) {
+          await sendTransport.produce({ track });
+        }
+      }
+
+      else if (msg.action === 'newProducer') {
+        recvTransport = device.createRecvTransport(msg.data);
+        recvTransport.on('connect', ({ dtlsParameters }, cb) => {
+          ws.send(JSON.stringify({ action: 'connectTransport', dtlsParameters }));
+          cb();
+        });
+
+        ws.send(JSON.stringify({ action: 'consume', producerId: msg.id, rtpCapabilities: device.rtpCapabilities }));
+      }
+
+      else if (msg.action === 'consumed') {
+        const consumer = await recvTransport.consume({
+          id: msg.id,
+          producerId: msg.id,
+          kind: msg.kind,
+          rtpParameters: msg.rtpParameters
+        });
+
+        const stream = new MediaStream([consumer.track]);
+        remoteVideo.srcObject = stream;
+      }
+    };
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ action: 'getRtpCapabilities' }));
+    };
+  </script>
+</body>
+</html>
