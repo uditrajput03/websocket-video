@@ -3,3 +3,4 @@ backend/node_modules/
 frontend/node_modules/
 webrtc/backend/node_modules
 webrtc/frontend/node_modules
+sfu/node_modules
