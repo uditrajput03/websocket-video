@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@squoosh/cli": "^0.7.3",
+    "@squoosh/lib": "^0.5.3",
     "@tailwindcss/vite": "^4.0.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
